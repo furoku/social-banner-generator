@@ -1,0 +1,60 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model BlogPost {
+  id          String   @id @default(cuid())
+  content     String   @db.Text
+  title       String?
+  subtitle    String?
+  description String?
+  cta         String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  projects    BannerProject[]
+}
+
+model BannerTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  thumbnail   String?
+  width       Int
+  height      Int
+  structure   String   // JSON structure of template
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  projects    BannerProject[]
+}
+
+model BannerProject {
+  id             String   @id @default(cuid())
+  name           String
+  blogPostId     String?
+  templateId     String
+  customizations String?  // JSON of customizations
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  blogPost       BlogPost? @relation(fields: [blogPostId], references: [id])
+  template       BannerTemplate @relation(fields: [templateId], references: [id])
+  elements       BannerElement[]
+}
+
+model BannerElement {
+  id              String   @id @default(cuid())
+  bannerProjectId String
+  type            String   // "text", "image", etc.
+  content         String   // Text content or image URL
+  properties      String   // JSON of properties (position, size, color, etc.)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  bannerProject   BannerProject @relation(fields: [bannerProjectId], references: [id])
+}
